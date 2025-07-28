@@ -18,3 +18,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
     int len = sprintf(msg, "Voltage: %.2f V\r\n", volt);
     HAL_UART_Transmit(&huart1, (uint8_t*)msg, len, HAL_MAX_DELAY);
 }
+
+static int counter = 0;
+counter++;
+sprintf(msg, "Callback #%d\r\n", counter);
+HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);  // блимає LED на кожне спрацювання
