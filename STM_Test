@@ -1,0 +1,20 @@
+#define ADC_BUF_LEN 16
+
+uint16_t adc_buf[ADC_BUF_LEN];
+char msg[64];
+
+HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADC_BUF_LEN);
+
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+    uint32_t sum = 0;
+    for (int i = 0; i < ADC_BUF_LEN; i++)
+        sum += adc_buf[i];
+
+    float avg = sum / (float)ADC_BUF_LEN;
+    float volt = (avg * 3.3f) / 4095.0f;
+
+    int len = sprintf(msg, "Voltage: %.2f V\r\n", volt);
+    HAL_UART_Transmit(&huart1, (uint8_t*)msg, len, HAL_MAX_DELAY);
+}
