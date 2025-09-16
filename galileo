@@ -1,0 +1,196 @@
+% % sing.m - Генерация GPS L1 C/A сигнала для PRN 1 (G1)
+% clear; clc;
+% 
+% % Параметры
+% prn = 1;              % Номер спутника (PRN 1)
+% signal_type = 'L1CA'; % Тип сигнала
+% fs = 5e6;             % Частота дискретизации (5 МГц)
+% n_periods = 100;      % Количество периодов (10 секунд)
+% if_freq = 4.092e6;    % Промежуточная частота (4.092 МГц)
+% doppler = 0;          % Doppler-сдвиг в Гц (можно задать, например, 1000 для +1 кГц)
+% 
+% % Проверка пути к GNSS-matlab
+% addpath('D:\matlab\GNSS-matlab'); % Убедись, что путь правильный
+% 
+% % Проверка наличия codes_L1CA.mat
+% if ~exist('codes_L1CA.mat', 'file')
+%     prn_list = 1:32;
+%     codes = GNSScodegen(prn_list, 'L1CA', 0);
+%     save('codes_L1CA.mat', 'codes');
+% end
+% 
+% % Генерация сигнала
+% try
+%     [I, Q] = GNSSsignalgen(prn, signal_type, fs, n_periods);
+%     disp('Сигнал успешно сгенерирован');
+% catch e
+%     disp('Ошибка в GNSSsignalgen:');
+%     disp(e.message);
+%     return;
+% end
+% 
+% % Добавление Doppler-сдвига (если нужен)
+% t = (0:length(I)-1)' / fs; % Временной вектор
+% signal = I .* exp(1j * 2 * pi * (if_freq + doppler) * t); % Комплексный сигнал с IF и Doppler
+% 
+% % Масштабирование для int16
+% scale_factor = 32767; % Максимум для int16
+% signal_i = real(signal) * scale_factor;
+% signal_q = imag(signal) * scale_factor; % Q обычно 0 для L1CA, но сохраняем для совместимости
+% signal_interleaved = zeros(2 * length(signal_i), 1);
+% signal_interleaved(1:2:end) = signal_i; % I-компонента
+% signal_interleaved(2:2:end) = signal_q; % Q-компонента
+% 
+% % Сохранение в .bin (int16, interleaved I/Q)
+% filename = 'gnss_signal_prn1.bin';
+% fid = fopen(filename, 'wb');
+% fwrite(fid, int16(signal_interleaved), 'int16');
+% fclose(fid);
+% disp(['Сигнал сохранён в ', filename]);
+% 
+% % Визуализация
+% figure;
+% subplot(2,1,1);
+% plot(signal_i(1:1000));
+% title(['Generated GNSS Signal (I-component) for GPS L1 C/A, PRN ', num2str(prn)]);
+% xlabel('Samples'); ylabel('Amplitude');
+% 
+% subplot(2,1,2);
+% plot(signal_q(1:1000));
+% title(['Generated GNSS Signal (Q-component) for GPS L1 C/A, PRN ', num2str(prn)]);
+% xlabel('Samples'); ylabel('Amplitude');
+% 
+% % Проверка чтения .bin
+% fid = fopen(filename, 'rb');
+% signal_read = fread(fid, 'int16');
+% fclose(fid);
+% figure;
+% plot(signal_read(1:2000));
+% title('Read Signal from .bin (Interleaved I/Q)');
+% xlabel('Samples'); ylabel('Amplitude');
+
+% clear; clc;
+% 
+% prn = 1;            
+% signal_type = 'L1CA'; 
+% fs = 5e6;            
+% n_periods = 100;     
+% if_freq = 4.092e6;    
+% doppler = 1000;       
+% scale_factor = 50000; 
+% 
+% addpath('D:\matlab\GNSS-matlab');
+% 
+% if ~exist('codes_L1CA.mat', 'file')
+%     prn_list = 1:1;
+%     codes = GNSScodegen(prn_list, 'L1CA', 0);
+%     save('codes_L1CA.mat', 'codes');
+% end
+% 
+% try
+%     [I, Q] = GNSSsignalgen(prn, signal_type, fs, n_periods);
+%     disp('Generated');
+% catch e
+%     disp('Error GNSSsignalgen:');
+%     disp(e.message);
+%     return;
+% end
+% 
+% t = (0:length(I)-1)' / fs;
+% signal = I .* exp(1j * 2 * pi * (if_freq + doppler) * t);
+% 
+% signal_i = real(signal) * scale_factor;
+% signal_q = imag(signal) * scale_factor;
+% signal_interleaved = zeros(2 * length(signal_i), 1);
+% signal_interleaved(1:2:end) = signal_i;
+% signal_interleaved(2:2:end) = signal_q; 
+% 
+% filename = 'gnss_signal_prn1.bin';
+% fid = fopen(filename, 'wb');
+% fwrite(fid, int16(signal_interleaved), 'int16');
+% fclose(fid);
+% disp(['Saved ', filename]);
+% 
+% figure;
+% subplot(2,1,1);
+% plot(signal_i(1:1000));
+% title(['Generated GNSS Signal (I-component) for GPS L1 C/A, PRN ', num2str(prn)]);
+% xlabel('Samples'); ylabel('Amplitude');
+% 
+% subplot(2,1,2);
+% plot(signal_q(1:1000));
+% title(['Generated GNSS Signal (Q-component) for GPS L1 C/A, PRN ', num2str(prn)]);
+% xlabel('Samples'); ylabel('Amplitude');
+% 
+% fid = fopen(filename, 'rb');
+% signal_read = fread(fid, 'int16');
+% fclose(fid);
+% figure;
+% plot(signal_read(1:2000));
+% title('Read Signal from .bin (Interleaved I/Q)');
+% xlabel('Samples'); ylabel('Amplitude');
+
+
+% sing.m - Генерация GPS L1 C/A сигнала только для PRN 1 (G1)
+clear; clc;
+
+prn = 1;             
+signal_type = 'E1OS';
+fs = 5e6;            
+n_periods = 5000;     
+if_freq = 4.092e6;  
+doppler = 2000;      
+scale_factor = 10000; 
+
+
+% Перевірка наявності codes_E1OS.mat
+if ~exist('codes_E1B.mat', 'file') || ~exist('codes_E1C.mat', 'file')
+    prn_list = 1:50; % Генерація кодів для всіх PRN Galileo
+    codes_E1B = GNSScodegen(prn_list, 'E1B', 0);
+    codes_E1C = GNSScodegen(prn_list, 'E1C', 0);
+    save('codes_E1B.mat', 'codes_E1B');
+    save('codes_E1C.mat', 'codes_E1C');
+end
+
+[I, Q] = GNSSsignalgen(prn, signal_type, fs, n_periods);
+disp('Generated ');
+
+t = (0:length(I)-1)' / fs;
+signal = (I + 1j * Q) .* exp(1j * 2 * pi * (if_freq + doppler) * t);
+
+SNR = 20;
+noise = (randn(size(signal)) + 1j * randn(size(signal))) * std(signal) / (10^(SNR/20));
+signal = signal + noise;
+
+max_I = max(abs(real(signal)));
+max_Q = max(abs(imag(signal)));
+signal_i = real(signal) * min(32767 / max_I, 1) * scale_factor;
+signal_q = imag(signal) * min(32767 / max_Q, 1) * scale_factor;
+signal_interleaved = zeros(2 * length(signal_i), 1, 'int16');
+signal_interleaved(1:2:end) = int16(signal_i);
+signal_interleaved(2:2:end) = int16(signal_q);
+
+filename = 'Galileo.bin';
+fid = fopen(filename, 'wb');
+fwrite(fid, signal_interleaved, 'int16');
+fclose(fid);
+disp(['Saved ', filename]);
+
+figure;
+subplot(2,1,1);
+plot(signal_i(1:1000));
+title(['Generated GNSS Signal (I-component) for Galileo E1OS, PRN ', num2str(prn)]);
+xlabel('Samples'); ylabel('Amplitude');
+
+subplot(2,1,2);
+plot(signal_q(1:1000));
+title(['Generated GNSS Signal (Q-component) for Galileo E1OS, PRN ', num2str(prn)]);
+xlabel('Samples'); ylabel('Amplitude');
+
+fid = fopen(filename, 'rb');
+signal_read = fread(fid, 'int16');
+fclose(fid);
+figure;
+plot(signal_read(1:2000));
+title('Read Signal from .bin (Interleaved I/Q)');
+xlabel('Samples'); ylabel('Amplitude');
