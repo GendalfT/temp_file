@@ -59,3 +59,50 @@ function yourgui_OpeningFcn(hObject, eventdata, handles, varargin)
 
     guidata(hObject, handles);
 end
+
+
+
+
+% --- Executes on button press in PPS1_checkbox.
+function PPS1_checkbox_Callback(hObject, eventdata, handles)
+isPPS1 = get(handles.PPS1_checkbox, 'Value');   % 1 = ON, 0 = OFF
+isTel  = get(handles.checkbox_telemetry, 'Value');
+
+if isPPS1
+    % PPS1 ON -> таймер повинен бути зупинений
+    if isfield(handles,'telemetry_timer') && isvalid(handles.telemetry_timer) ...
+            && strcmp(get(handles.telemetry_timer,'Running'),'on')
+        stop(handles.telemetry_timer);
+    end
+    SendPacket(handles, handles.define.MB_COMMAND, 10); % PPS1 ON
+else
+    % PPS1 OFF -> якщо телеметрія увімкнена, запускаємо таймер
+    SendPacket(handles, handles.define.MB_COMMAND, 7);  % PPS1 OFF
+    if isTel && isfield(handles,'telemetry_timer') && isvalid(handles.telemetry_timer) ...
+            && strcmp(get(handles.telemetry_timer,'Running'),'off')
+        start(handles.telemetry_timer);
+    end
+end
+guidata(hObject, handles);
+
+
+% --- Executes on button press in checkbox_telemetry.
+function checkbox_telemetry_Callback(hObject, eventdata, handles)
+isTel  = get(handles.checkbox_telemetry, 'Value'); % 1 = ON
+isPPS1 = get(handles.PPS1_checkbox, 'Value');      % 1 = ON
+
+if isTel
+    SendPacket(handles, handles.define.MB_COMMAND, 11); % telemetry ON
+    % Запускаємо таймер тільки якщо PPS1 вимкнений
+    if ~isPPS1 && isfield(handles,'telemetry_timer') && isvalid(handles.telemetry_timer) ...
+            && strcmp(get(handles.telemetry_timer,'Running'),'off')
+        start(handles.telemetry_timer);
+    end
+else
+    % Телеметрія OFF -> зупиняємо таймер
+    if isfield(handles,'telemetry_timer') && isvalid(handles.telemetry_timer) ...
+            && strcmp(get(handles.telemetry_timer,'Running'),'on')
+        stop(handles.telemetry_timer);
+    end
+end
+guidata(hObject, handles);
