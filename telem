@@ -36,3 +36,26 @@ guidata(hObject, handles);
 function timerWrapper(hObject)
 handles = guidata(hObject);
 SendPacket(handles, handles.define.MB_COMMAND, 7); % команда 7 = PPS1 OFF (запит телеметрії)
+
+
+
+
+function yourgui_OpeningFcn(hObject, eventdata, handles, varargin)
+    handles.output = hObject;
+
+    % (за потреби) створюємо таймер, якщо він ще не створений
+    if ~isfield(handles, 'telemetry_timer') || ~isvalid(handles.telemetry_timer)
+        handles.telemetry_timer = timer( ...
+            'ExecutionMode','fixedRate', ...
+            'Period',1, ...
+            'TimerFcn', @(~,~) timerWrapper(hObject));
+    end
+
+    % 1) візуально позначити чекбокс PPS1
+    set(handles.PPS1_checkbox, 'Value', 1);
+
+    % 2) застосувати побічні дії так само, як при ручному кліку
+    PPS1_checkbox_Callback(handles.PPS1_checkbox, [], handles);
+
+    guidata(hObject, handles);
+end
