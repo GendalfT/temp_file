@@ -1,0 +1,38 @@
+% --- Executes on button press in PPS1_checkbox.
+function PPS1_checkbox_Callback(hObject, eventdata, handles)
+
+if get(hObject, 'Value') == 1
+    % PPS1 увімкнений
+    stop(handles.telemetry_timer); % на всякий випадок зупиняємо таймер
+    SendPacket(handles, handles.define.MB_COMMAND, 10); % команда 10 = PPS1 ON
+else
+    % PPS1 вимкнений
+    SendPacket(handles, handles.define.MB_COMMAND, 7);  % команда 7 = PPS1 OFF
+    
+    % якщо телеметрія включена → запускаємо таймер
+    if get(handles.checkbox_telemetry, 'Value') == 1
+        start(handles.telemetry_timer);
+    end
+end
+guidata(hObject, handles);
+
+% --- Executes on button press in checkbox_telemetry.
+function checkbox_telemetry_Callback(hObject, eventdata, handles)
+
+if get(hObject, 'Value') == 1
+    SendPacket(handles, handles.define.MB_COMMAND, 11); % вмикаємо телеметрію
+    
+    % якщо PPS1 вимкнений → запускаємо таймер
+    if get(handles.PPS1_checkbox, 'Value') == 0
+        start(handles.telemetry_timer);
+    end
+else
+    % телеметрія вимкнена → зупиняємо таймер
+    stop(handles.telemetry_timer);
+end
+guidata(hObject, handles);
+
+% --- Function for telemetry timer
+function timerWrapper(hObject)
+handles = guidata(hObject);
+SendPacket(handles, handles.define.MB_COMMAND, 7); % команда 7 = PPS1 OFF (запит телеметрії)
