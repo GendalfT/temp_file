@@ -1,0 +1,39 @@
+% --- Executes on button press in checkbox_telemetry.
+function checkbox_telemetry_Callback(hObject, eventdata, handles)
+if get(hObject, 'Value') == 1
+    SendPacket(handles, handles.define.MB_COMMAND, 11);
+else 
+    stop(handles.telemetry_timer);
+end
+guidata(hObject, handles);
+
+
+% --- Executes on button press in PPS1_checkbox.
+function PPS1_checkbox_Callback(hObject, eventdata, handles)
+% if get(hObject, 'Value') == 1
+%     stop(handles.telemetry_timer);
+%     SendPacket(handles, handles.define.MB_COMMAND, 10);
+% else
+%     if get(handles.checkbox_telemetry, 'Value') == 1
+%         SendPacket(handles, handles.define.MB_COMMAND, 11);
+%         start(handles.telemetry_timer);
+%     else
+%         SendPacket(handles, handles.define.MB_COMMAND, 7);
+%     end
+% end
+if get(hObject, 'Value') == 1
+    SendPacket(handles, handles.define.MB_COMMAND, 7);
+    msg = sprintf('PPS1 disable');
+    currentText = get(handles.textBox, 'String');
+    if ischar(currentText)
+        currentText = {currentText};
+    end
+    updatedText = [{msg}; currentText];
+    set(handles.textBox, 'String', updatedText);
+    start(handles.telemetry_timer);
+else
+    stop(handles.telemetry_timer);
+    SendPacket(handles, handles.define.MB_COMMAND, 10);
+end
+
+guidata(hObject, handles);
